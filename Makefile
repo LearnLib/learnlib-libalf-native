@@ -1,17 +1,19 @@
+# Makefile for the learnlib-libalf native bridge
+# Copyright (c) 2015 TU Dortmund
+# This file is part of LearnLib, http://www.learnlib.de/.
+# Licensed under LGPLv3, see COPYING.txt for further information.
+
+# Author: Malte Isberner
 
 SRCDIR=src
 
 SOURCES = $(wildcard ${SRCDIR}/*.cpp)
 OBJECTS = $(SOURCES:.cpp=.o)
 
-TARGET = liblearnlib-libalf.dylib
+include ./config.mk
 
-LIBALF_PREFIX?=/usr/local
-LIBALF_LIBDIR?=${LIBALF_PREFIX}/lib
-LIBALF_INCLUDE?=${LIBALF_PREFIX}/include
+TARGET = ${LIBPREFIX}learnlib-libalf.${LIBEXT}
 
-JAVA_INCLUDE = ${JAVA_HOME}/include
-JNI_INCLUDE = ${JAVA_INCLUDE}/darwin
 
 INCLUDES = include ${LIBALF_INCLUDE} ${JAVA_INCLUDE} ${JNI_INCLUDE}
 LIB_DIRS = ${LIBALF_LIBDIR}
