@@ -30,11 +30,13 @@ else
 	LIBPREFIX=lib
 endif
 
-# Use ginstall in Mac OS X
+# Use ginstall in Mac OS X, only use strip -x
 ifeq (${OS}, Darwin)
 	INSTALL?=ginstall
+	STRIPFLAGS=-x
 else
 	INSTALL?=install
+	STRIPFLAGS=--strip-unneeded
 endif
 
 # ldconfig needs to be run on Linux

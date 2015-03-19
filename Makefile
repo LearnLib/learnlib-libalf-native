@@ -28,7 +28,7 @@ all: ${TARGET}
 
 ${TARGET}: ${OBJECTS}
 	${CXX} ${LDFLAGS} -Xlinker ${OBJECTS} ${LIBALF_LIBDIR}/libalf.a -o $@
-	strip --strip-unneeded $@
+	strip ${STRIPFLAGS} $@
 
 clean:
 	-rm -f ${TARGET} ${OBJECTS}
