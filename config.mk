@@ -3,7 +3,6 @@ LIBALF_LIBDIR?=${LIBALF_PREFIX}/lib
 LIBALF_INCLUDE?=${LIBALF_PREFIX}/include
 
 JAVA_INCLUDE = ${JAVA_HOME}/include
-JNI_INCLUDE = ${JAVA_INCLUDE}/darwin
 
 
 ifndef OS
@@ -13,10 +12,13 @@ endif
 ifeq (${OS}, Windows_NT) # Windows
 	LIBEXT=dll
 	LDFLAGS+=-lws2_32
+	JNI_INCLUDE = ${JAVA_INCLUDE}/win32
 else ifeq (${OS}, Darwin) # Mac OS
 	LIBEXT=dylib
+	JNI_INCLUDE = ${JAVA_INCLUDE}/darwin
 else ifeq (${OS}, Linux) # Linux
 	LIBEXT=so
+	JNI_INCLUDE = ${JAVA_INCLUDE}/linux
 else
 	$(error Unsupported operating system ${OS})
 endif
