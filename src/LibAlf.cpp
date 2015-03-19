@@ -21,6 +21,7 @@
 
 #include <map>
 #include <list>
+#include <cstring>
 
 #include "LibAlf.hpp"
 #include "JNIUtil.hpp"
@@ -29,8 +30,6 @@
 #include <libalf/algorithm_kearns_vazirani.h>
 #include <libalf/algorithm_rivest_schapire.h>
 #include <libalf/algorithm_NLstar.h>
-
-#include <stdio.h>
 
 
 struct StrLess {

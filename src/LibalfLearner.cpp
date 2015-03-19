@@ -26,7 +26,6 @@
 #include <libalf/alf.h>
 #include <libalf/learning_algorithm.h>
 
-#include <stdio.h>
 
 
 // JNI native methods
