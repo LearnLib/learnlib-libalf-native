@@ -27,7 +27,7 @@ LDFLAGS += $(LIB_DIRS:%=-L%)
 all: ${TARGET}
 
 ${TARGET}: ${OBJECTS}
-	${CXX} ${LDFLAGS} -Xlinker ${OBJECTS} ${LIBALF_LIBDIR}/libalf.a -o $@
+	${CXX} -Xlinker ${OBJECTS} ${LIBALF_LIBDIR}/libalf.a ${LDFLAGS} -o $@
 	strip ${STRIPFLAGS} $@
 
 clean:

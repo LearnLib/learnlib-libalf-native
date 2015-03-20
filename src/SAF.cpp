@@ -116,10 +116,12 @@ size_t computeNFASize(const libalf::finite_automaton &fa)
 					}
 				}
 
-				if (sit != strans.end() && sit->first == i) {
+				if (sit != strans.end() && sit->first == j) {
 					numWords += sit->second.size();
+					++sit;
 				}
 			}
+			++it;
 		}
 	}
 
@@ -144,14 +146,14 @@ void writeAcceptance(Sink &snk, const libalf::finite_automaton &fa)
 			currMask = 1;
 		}
 
-		if (it->first != i) {
+		if (it == fa.output_mapping.end() || it->first != i) {
 			std::map<int, bool>::const_iterator it2 = fa.output_mapping.find(i);
 			if (it2 != fa.output_mapping.end()) {
 				it = it2;
 			}
 		}
 		bool acc = false;
-		if (it->first == i) {
+		if (it != fa.output_mapping.end() && it->first == i) {
 			acc = it->second;
 			++it;
 		}
@@ -194,13 +196,15 @@ void writeNFATransitions(Sink &snk, int alphabetSize, int numStates, const Trans
 					}
 				}
 
-				if (sit != strans.end() && sit->first == i) {
+				if (sit != strans.end() && sit->first == j) {
 					writeSet(snk, sit->second);
+					++sit;
 				}
 				else {
 					snk.writeInt32(0);
 				}
 			}
+			++it;
 		}
 		else {
 			for (int j = 0; j < alphabetSize; j++) {
