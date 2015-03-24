@@ -23,7 +23,7 @@
 #ifndef LEARNLIB_LIBALF_NATIVE_JNIUTIL_HPP
 #define LEARNLIB_LIBALF_NATIVE_JNIUTIL_HPP
 
-#include <cstdlib>
+#include <cstring>
 
 #include <jni.h>
 

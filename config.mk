@@ -1,8 +1,8 @@
 LIBALF_PREFIX?=/usr/local
-LIBALF_LIBDIR?=${LIBALF_PREFIX}/lib
-LIBALF_INCLUDE?=${LIBALF_PREFIX}/include
+LIBALF_LIBDIR?=$(subst \,/,${LIBALF_PREFIX})/lib
+LIBALF_INCLUDE?=$(subst \,/,${LIBALF_PREFIX})/include
 
-JAVA_INCLUDE = ${JAVA_HOME}/include
+JAVA_INCLUDE = $(subst \,/,${JAVA_HOME})/include
 
 
 ifndef OS
