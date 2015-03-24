@@ -20,8 +20,10 @@
 // pointers in Java data types.
 // Author: Malte Isberner
 
-#ifndef JNI_UTIL_HPP
-#define JNI_UTIL_HPP
+#ifndef LEARNLIB_LIBALF_NATIVE_JNIUTIL_HPP
+#define LEARNLIB_LIBALF_NATIVE_JNIUTIL_HPP
+
+#include <cstdlib>
 
 #include <jni.h>
 
@@ -34,7 +36,7 @@ inline jbyteArray createPtr(JNIEnv *env, void *ptr)
 	}
 	jbyteArray jptr = env->NewByteArray(sizeof(ptr));
 	jbyte *contents = env->GetByteArrayElements(jptr, NULL);
-	*reinterpret_cast<void **>(contents) = ptr;
+	std::memcpy(contents, &ptr, sizeof(ptr));
 	env->ReleaseByteArrayElements(jptr, contents, 0);
 	return jptr;
 }
@@ -45,7 +47,8 @@ inline void *extractUntypedPtr(JNIEnv *env, jbyteArray jptr)
 		return NULL;
 	}
 	jbyte *contents = env->GetByteArrayElements(jptr, NULL);
-	void *ptr = *reinterpret_cast<void **>(contents);
+	void *ptr;
+	std::memcpy(&ptr, contents, sizeof(ptr));
 	env->ReleaseByteArrayElements(jptr, contents, 0);
 	return ptr;
 }
@@ -64,4 +67,4 @@ inline T &extractRef(JNIEnv *env, jbyteArray jptr)
 
 };
 
-#endif // JNI_UTIL_HPP
+#endif // LEARNLIB_LIBALF_NATIVE_JNIUTIL_HPP

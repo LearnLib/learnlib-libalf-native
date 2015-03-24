@@ -309,13 +309,10 @@ void writeDFA(Sink &snk, const libalf::finite_automaton &fa)
 	writeDFATransitions(snk, fa.input_alphabet_size, numStates, fa.transitions);
 }
 
-jbyte *encodeDFA(const libalf::finite_automaton &fa, size_t *sizeOut)
+jbyte *encodeDFA(const libalf::finite_automaton &fa, size_t &sizeOut)
 {
 	size_t size = computeDFASize(fa);
-
-	if (sizeOut) {
-		*sizeOut = size;
-	}
+	sizeOut = size;
 
 	jbyte *data = new jbyte[size];
 	ArraySink snk(data, size);
@@ -324,13 +321,10 @@ jbyte *encodeDFA(const libalf::finite_automaton &fa, size_t *sizeOut)
 
 	return data;
 }
-jbyte *encodeNFA(const libalf::finite_automaton &fa, size_t *sizeOut)
+jbyte *encodeNFA(const libalf::finite_automaton &fa, size_t &sizeOut)
 {
 	size_t size = computeNFASize(fa);
-
-	if (sizeOut) {
-		*sizeOut = size;
-	}
+	sizeOut = size;
 
 	jbyte *data = new jbyte[size];
 	ArraySink snk(data, size);

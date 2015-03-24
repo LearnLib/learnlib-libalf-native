@@ -31,13 +31,13 @@ namespace SAF {
  * Encodes a DFA into SAF, stored in a byte array. The size of the allocated
  * array is returned via the second parameter.
  */
-jbyte *encodeDFA(const libalf::finite_automaton &fa, size_t *sizeOut);
+jbyte *encodeDFA(const libalf::finite_automaton &fa, size_t &sizeOut);
 
 /*
  * Encodes an NFA into SAF, stored in a byte array. The size of the allocated
  * array is returned via the second parameter.
  */
-jbyte *encodeNFA(const libalf::finite_automaton &fa, size_t *sizeOut);
+jbyte *encodeNFA(const libalf::finite_automaton &fa, size_t &sizeOut);
 	
 };
 

@@ -24,12 +24,18 @@
 #include <cstring>
 
 #include "LibAlf.hpp"
+#include "LibalfLearner.hpp"
 #include "JNIUtil.hpp"
 
 #include <libalf/algorithm_angluin.h>
 #include <libalf/algorithm_kearns_vazirani.h>
 #include <libalf/algorithm_rivest_schapire.h>
 #include <libalf/algorithm_NLstar.h>
+
+ #include <libalf/algorithm_RPNI.h>
+ #include <libalf/algorithm_DeLeTe2.h>
+ #include <libalf/algorithm_biermann_minisat.h>
+ #include <libalf/algorithm_biermann_original.h>
 
 
 struct StrLess {
@@ -39,18 +45,18 @@ struct StrLess {
 	}
 };
 
-static std::map<const char *, LearnerInit, StrLess> g_learnerInits;
+static std::map<const char *, LearnerInit *, StrLess> g_learnerInits;
 
 class LearnerMetadataDecl {
 public:
-	LearnerMetadataDecl(const char *name, LearnerInit init)
+	LearnerMetadataDecl(const char *name, LearnerInit *init)
 	{
 		g_learnerInits[name] = init;
 	}
 };
 
 #define DEFINE_LEARNER(name, type, alfClass, ...) \
-class name ## Learner : public Libalf ## type ## Learner { \
+class name ## Learner : public Libalf ## type ## Learner<name ## Learner> { \
 public: \
 	static LibalfLearner *init(jint alphabetSize, size_t otherOptsLen, jint *otherOptions) \
 	{ \
@@ -58,12 +64,10 @@ public: \
 	} \
 public: \
 	name ## Learner(int alphabetSize, size_t otherOptsLen, jint *otherOptions) \
-		: m_algo(&m_kb, NULL, alphabetSize, ##__VA_ARGS__) \
+		: m_algorithm(&m_kb, NULL, alphabetSize, ##__VA_ARGS__) \
 	{} \
-protected: \
-	virtual LibalfAlgoBase &algorithm(void) { return m_algo; } \
-private: \
-	alfClass m_algo; \
+public: \
+	alfClass m_algorithm; \
 }; \
 static LearnerMetadataDecl g_metadata_ ## name(#name, &name ## Learner::init)
 
@@ -84,6 +88,10 @@ DEFINE_LEARNER(KV_DFA, DFA, libalf::kearns_vazirani<bool>, kvUseBinarySearch(oth
 DEFINE_LEARNER(RS_DFA, DFA, libalf::rivest_schapire_table<bool>);
 DEFINE_LEARNER(NLSTAR, NFA, libalf::NLstar_table<bool>);
 
+DEFINE_LEARNER(RPNI, DFA, libalf::RPNI<bool>);
+DEFINE_LEARNER(DELETE2, NFA, libalf::DeLeTe2<bool>);
+DEFINE_LEARNER(BIERMANN_MINISAT, DFA, libalf::MiniSat_biermann<bool>);
+DEFINE_LEARNER(BIERMANN_ORIGINAL_DFA, DFA, libalf::original_biermann<bool>, 1);
 
 class LibalfInstanceMgr {
 public:
@@ -129,9 +137,9 @@ LibAlf::LibAlf(JNIEnv *env, jobjectArray algIds)
 		jstring jname = static_cast<jstring>(env->CallObjectMethod(alg, toStringMethod));
 		env->DeleteLocalRef(alg);
 		const char *name = env->GetStringUTFChars(jname, NULL);
-		std::map<const char *, LearnerInit>::iterator initIt = g_learnerInits.find(name);
+		std::map<const char *, LearnerInit *>::iterator initIt = g_learnerInits.find(name);
 		env->ReleaseStringUTFChars(jname, name);
-		LearnerInit init = NULL;
+		LearnerInit *init = NULL;
 		if (initIt != g_learnerInits.end()) {
 			init = initIt->second;
 		}
@@ -144,7 +152,7 @@ LibalfLearner *LibAlf::createLearner(jint algorithmId, jint alphabetSize, size_t
 	if (algorithmId < 0 || static_cast<size_t>(algorithmId) >= m_inits.size()) {
 		return NULL;
 	}
-	LearnerInit init = m_inits[algorithmId];
+	LearnerInit *init = m_inits[algorithmId];
 	if (!init) {
 		return NULL;
 	}

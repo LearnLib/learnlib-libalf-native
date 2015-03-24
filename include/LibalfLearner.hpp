@@ -20,8 +20,8 @@
 // plus automaton-type dependent specializations.
 // Author: Malte Isberner
 
-#ifndef LIBALF_LEARNER_HPP
-#define LIBALF_LEARNER_HPP
+#ifndef LEARNLIB_LIBALF_NATIVE_LIBALFLEARNER_HPP
+#define LEARNLIB_LIBALF_NATIVE_LIBALFLEARNER_HPP
 
 #include <list>
 
@@ -37,28 +37,27 @@ typedef std::list<Word> QueryBatch;
 
 class LibalfLearner {
 public:
-	LibalfLearner() {}
-	virtual ~LibalfLearner() {}
+	LibalfLearner(void) {}
+	virtual ~LibalfLearner(void) {}
 
-	virtual libalf::conjecture *advance(void) = 0;
+	virtual const libalf::conjecture *advance(void) = 0;
 	virtual QueryBatch *getQueries(void) = 0;
 	virtual void addCounterExample(Word &ce) = 0;
-	virtual void processEncodedAnswer(Word &w, jint answer) = 0;
-	virtual jbyte *encodeConjecture(libalf::conjecture *cj, size_t *size) = 0;
+	virtual bool addEncodedAnswer(Word &w, jint answer) = 0;
+	virtual jbyte *encodeConjecture(const libalf::conjecture &cj, size_t &size) const = 0;
 };
 
 
-template<class A>
+template<class A, class D>
 class TypedLibalfLearner : public LibalfLearner {
-protected:
-	typedef libalf::learning_algorithm<A> LibalfAlgoBase;
 public:
-	virtual ~TypedLibalfLearner() {}
+	typedef libalf::learning_algorithm<A> LibalfAlgoBase;
 
-	virtual void processEncodedAnswer(Word &w, jint answer)
+public:
+	virtual bool addEncodedAnswer(Word &w, jint answer)
 	{
-		A answerDec = decodeAnswer(answer);
-		m_kb.add_knowledge(w, answerDec);
+		A answerDec = static_cast<D *>(this)->decodeAnswer(answer);
+		return m_kb.add_knowledge(w, answerDec);
 	}
 
 	virtual QueryBatch *getQueries(void)
@@ -66,51 +65,55 @@ public:
 		return new QueryBatch(m_kb.get_queries());
 	}
 
-	virtual libalf::conjecture *advance(void)
+	virtual const libalf::conjecture *advance(void)
 	{
-		return algorithm().advance();
+		return static_cast<D *>(this)->m_algorithm.advance();
 	}
 
 	virtual void addCounterExample(Word &ce)
 	{
-		algorithm().add_counterexample(ce);
+		static_cast<D *>(this)->m_algorithm.add_counterexample(ce);
 	}
 
-protected:
-	virtual A decodeAnswer(jint encAnswer) = 0;
-	virtual jint encodeAnswer(A answer) = 0;
-
-	virtual LibalfAlgoBase &algorithm(void) = 0;
+public:
+	// A decodeAnswer(jint encAnswer) const;
 
 protected:
 	libalf::knowledgebase<A> m_kb;
+	// LibalfAlgoBase m_algorithm;
 };
 
-class LibalfDFALearner : public TypedLibalfLearner<bool> {
+template<class D>
+class LibalfFALearner : public TypedLibalfLearner<bool,D> {
 public:
-	virtual jbyte *encodeConjecture(libalf::conjecture *cj, size_t *size)
+	jbyte *encodeConjecture(const libalf::conjecture &cj, size_t &size) const
 	{
-		libalf::finite_automaton *fa = dynamic_cast<libalf::finite_automaton *>(cj);
-		return SAF::encodeDFA(*fa, size);
+		const libalf::finite_automaton &fa = dynamic_cast<const libalf::finite_automaton &>(cj);
+		return static_cast<const D *>(this)->encodeFAConjecture(fa, size);
 	}
 
-protected:
-	virtual bool decodeAnswer(jint encAnswer) { return (encAnswer); }
-	virtual jint encodeAnswer(bool answer) { return (answer) ? 1 : 0; }
-};
-
-class LibalfNFALearner : public TypedLibalfLearner<bool> {
 public:
-	virtual jbyte *encodeConjecture(libalf::conjecture *cj, size_t *size)
-	{
-		libalf::finite_automaton *fa = dynamic_cast<libalf::finite_automaton *>(cj);
-		return SAF::encodeNFA(*fa, size);
-	}
+	bool decodeAnswer(jint encAnswer) const { return (encAnswer); }
+	// jbyte *encodeFAConjecture(const libalf::finite_automaton &fa, size_t &size) const;
+};
 
-protected:
-	virtual bool decodeAnswer(jint encAnswer) { return (encAnswer); }
-	virtual jint encodeAnswer(bool answer) { return (answer) ? 1 : 0; }
+template<class D>
+class LibalfDFALearner : public LibalfFALearner<D> {
+public:
+	jbyte *encodeFAConjecture(const libalf::finite_automaton &fa, size_t &size) const
+	{
+		return SAF::encodeDFA(fa, size);
+	}
+};
+
+template<class D>
+class LibalfNFALearner : public LibalfFALearner<D> {
+public:
+	jbyte *encodeFAConjecture(const libalf::finite_automaton &fa, size_t &size) const
+	{
+		return SAF::encodeNFA(fa, size);
+	}
 };
 
 
-#endif // LIBALF_LEARNER_HPP
+#endif // LEARNLIB_LIBALF_NATIVE_LIBALFLEARNER_HPP

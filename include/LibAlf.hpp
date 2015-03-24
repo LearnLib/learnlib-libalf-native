@@ -20,14 +20,15 @@
 // available algorithms and their instantiation.
 // Author: Malte Isberner
 
-#ifndef LIB_ALF_HPP
-#define LIB_ALF_HPP
+#ifndef LEARNLIB_LIBALF_NATIVE_LIBALF_HPP
+#define LEARNLIB_LIBALF_NATIVE_LIBALF_HPP
 
 #include <jni.h>
 #include <vector>
-#include "LibalfLearner.hpp"
 
-typedef LibalfLearner *(*LearnerInit)(jint alphabetSize, size_t otherOptsLen, jint *otherOptions);
+class LibalfLearner;
+
+typedef LibalfLearner *LearnerInit(jint alphabetSize, size_t otherOptsLen, jint *otherOptions);
 
 class LibAlf {
 	friend class LibalfInstanceMgr;
@@ -37,8 +38,8 @@ public:
 	LibalfLearner *createLearner(jint algorithmId, jint alphabetSize, size_t otherOptsLen, jint *otherOptions) const;
 
 private:
-	std::vector<LearnerInit> m_inits;
+	std::vector<LearnerInit *> m_inits;
 	std::list<LibAlf *>::iterator m_ref;
 };
 
-#endif // LIB_ALF_HPP
+#endif // LEARNLIB_LIBALF_NATIVE_LIBALF_HPP
