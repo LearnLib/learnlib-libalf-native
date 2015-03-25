@@ -51,23 +51,21 @@ JNIEXPORT jintArray JNICALL Java_de_learnlib_libalf_LibalfActiveLearner_getQueri
 	for (QueryBatch::iterator it = queryBatch.begin(); it != queryBatch.end(); ++it) {
 		totalSpace += it->size() + 1;
 	}
-	jint *queriesEnc = new jint[totalSpace];
-	jint *p = queriesEnc;
-	*p++ = static_cast<jint>(numQueries);
-	for (QueryBatch::iterator it = queryBatch.begin(); it != queryBatch.end(); ++it) {
-		Word &word = *it;
-		*p++ = static_cast<jint>(word.size());
-		for (Word::iterator it2 = word.begin(); it2 != word.end(); ++it2) {
-			*p++ = static_cast<jint>(*it2);
-		}
-	}
-
 	jintArray result = env->NewIntArray(totalSpace);
 	if (!result) {
 		return NULL;
 	}
-	env->SetIntArrayRegion(result, 0, totalSpace, queriesEnc);
-	delete[] queriesEnc;
+	jint *queriesEnc = static_cast<jint *>(env->GetPrimitiveArrayCritical(result, NULL));
+	jint *p = queriesEnc;
+	*p++ = static_cast<jint>(numQueries);
+	for (QueryBatch::iterator it = queryBatch.begin(); it != queryBatch.end(); ++it) {
+		const Word &word = *it;
+		*p++ = static_cast<jint>(word.size());
+		for (Word::const_iterator it2 = word.begin(); it2 != word.end(); ++it2) {
+			*p++ = static_cast<jint>(*it2);
+		}
+	}
+	env->ReleasePrimitiveArrayCritical(result, queriesEnc, 0);
 
 	return result;
 }
@@ -84,7 +82,7 @@ JNIEXPORT void JNICALL Java_de_learnlib_libalf_LibalfActiveLearner_processAnswer
 
 	QueryBatch *queryBatch = JNIUtil::extractPtr<QueryBatch>(env, batchPtr);
 
-	jint *answers = env->GetIntArrayElements(jAnswers, NULL);
+	jint *answers = static_cast<jint *>(env->GetPrimitiveArrayCritical(jAnswers, NULL));
 	jint *answp = answers;
 
 	for (QueryBatch::iterator it = queryBatch->begin(); it != queryBatch->end(); ++it) {
@@ -92,7 +90,7 @@ JNIEXPORT void JNICALL Java_de_learnlib_libalf_LibalfActiveLearner_processAnswer
 		learner.addEncodedAnswer(word, *answp++);
 	}
 
-	env->ReleaseIntArrayElements(jAnswers, answers, 0);
+	env->ReleasePrimitiveArrayCritical(jAnswers, answers, 0);
 
 	delete queryBatch;
 }
@@ -108,7 +106,7 @@ JNIEXPORT void JNICALL Java_de_learnlib_libalf_LibalfActiveLearner_addCounterExa
 	LibalfLearner &learner = JNIUtil::extractRef<LibalfLearner>(env, ptr);
 
 	jint wordLen = env->GetArrayLength(jWord);
-	jint *word = env->GetIntArrayElements(jWord, NULL);
+	jint *word = static_cast<jint *>(env->GetPrimitiveArrayCritical(jWord, NULL));
 	jint *wordp = word;
 
 	Word w;
@@ -116,7 +114,7 @@ JNIEXPORT void JNICALL Java_de_learnlib_libalf_LibalfActiveLearner_addCounterExa
 		w.push_back(*wordp++);
 	}
 
-	env->ReleaseIntArrayElements(jWord, word, 0);
+	env->ReleasePrimitiveArrayCritical(jWord, word, 0);
 
 	learner.addCounterExample(w);
 }

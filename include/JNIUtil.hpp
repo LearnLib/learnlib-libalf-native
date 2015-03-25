@@ -35,9 +35,9 @@ inline jbyteArray createPtr(JNIEnv *env, void *ptr)
 		return NULL;
 	}
 	jbyteArray jptr = env->NewByteArray(sizeof(ptr));
-	jbyte *contents = env->GetByteArrayElements(jptr, NULL);
+	jbyte *contents = static_cast<jbyte *>(env->GetPrimitiveArrayCritical(jptr, NULL));
 	std::memcpy(contents, &ptr, sizeof(ptr));
-	env->ReleaseByteArrayElements(jptr, contents, 0);
+	env->ReleasePrimitiveArrayCritical(jptr, contents, 0);
 	return jptr;
 }
 
@@ -46,10 +46,10 @@ inline void *extractUntypedPtr(JNIEnv *env, jbyteArray jptr)
 	if (!jptr) {
 		return NULL;
 	}
-	jbyte *contents = env->GetByteArrayElements(jptr, NULL);
+	jbyte *contents = static_cast<jbyte *>(env->GetPrimitiveArrayCritical(jptr, NULL));
 	void *ptr;
 	std::memcpy(&ptr, contents, sizeof(ptr));
-	env->ReleaseByteArrayElements(jptr, contents, 0);
+	env->ReleasePrimitiveArrayCritical(jptr, contents, 0);
 	return ptr;
 }
 

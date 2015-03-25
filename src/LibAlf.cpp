@@ -200,13 +200,13 @@ JNIEXPORT jbyteArray JNICALL Java_de_learnlib_libalf_LibAlf_initAlgorithm
 	size_t otherOptsLen = static_cast<size_t>(env->GetArrayLength(jOtherOpts));
 	jint *otherOpts = NULL;
 	if (otherOptsLen) {
-		otherOpts = env->GetIntArrayElements(jOtherOpts, NULL);
+		otherOpts = static_cast<jint *>(env->GetPrimitiveArrayCritical(jOtherOpts, NULL));
 	}
 
 	LibalfLearner *alg = instance->createLearner(algorithmId, alphabetSize, otherOptsLen, otherOpts);
 
 	if (otherOpts) {
-		env->ReleaseIntArrayElements(jOtherOpts, otherOpts, 0);
+		env->ReleasePrimitiveArrayCritical(jOtherOpts, otherOpts, 0);
 	}
 
 	return JNIUtil::createPtr(env, alg);

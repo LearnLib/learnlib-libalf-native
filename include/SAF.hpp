@@ -27,18 +27,37 @@
 
 namespace SAF {
 
+size_t computeDFASize(const libalf::finite_automaton &fa);
+void encodeDFA(jbyte *buf, size_t len, const libalf::finite_automaton &fa);
 /*
  * Encodes a DFA into SAF, stored in a byte array. The size of the allocated
  * array is returned via the second parameter.
  */
-jbyte *encodeDFA(const libalf::finite_automaton &fa, size_t &sizeOut);
+inline jbyte *encodeDFA(const libalf::finite_automaton &fa, size_t &sizeOut)
+{
+	size_t size = computeDFASize(fa);
+	sizeOut = size;
+	jbyte *buf = new jbyte[size];
+	encodeDFA(buf, size, fa);
+	return buf;
+}
 
+
+size_t computeNFASize(const libalf::finite_automaton &fa);
+void encodeNFA(jbyte *buf, size_t len, const libalf::finite_automaton &fa);
 /*
  * Encodes an NFA into SAF, stored in a byte array. The size of the allocated
  * array is returned via the second parameter.
  */
-jbyte *encodeNFA(const libalf::finite_automaton &fa, size_t &sizeOut);
-	
+inline jbyte *encodeNFA(const libalf::finite_automaton &fa, size_t &sizeOut)
+{
+	size_t size = computeNFASize(fa);
+	sizeOut = size;
+	jbyte *buf = new jbyte[size];
+	encodeNFA(buf, size, fa);
+	return buf;
+}
+
 };
 
 #endif

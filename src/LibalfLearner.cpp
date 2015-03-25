@@ -45,20 +45,16 @@ JNIEXPORT jbyteArray JNICALL Java_de_learnlib_libalf_LibalfLearner_advance
 	if (!cj) {
 		return NULL;
 	}
-	size_t cjLen;
-	jbyte *cjEnc = learner.encodeConjecture(*cj, cjLen);
-	delete cj;
-	if (!cjEnc) {
-		return NULL;
-	}
-
+	size_t cjLen = learner.computeConjectureSize(*cj);
 	jbyteArray result = env->NewByteArray(cjLen);
 	if (!result) {
-		delete[] cjEnc;
+		delete cj;
 		return NULL;
 	}
-	env->SetByteArrayRegion(result, 0, cjLen, cjEnc);
-	delete[] cjEnc;
+	jbyte *cjEnc = static_cast<jbyte *>(env->GetPrimitiveArrayCritical(result, NULL));
+	learner.encodeConjecture(cjEnc, cjLen, *cj);
+	env->ReleasePrimitiveArrayCritical(result, cjEnc, 0);
+	delete cj;
 
 	return result;
 }

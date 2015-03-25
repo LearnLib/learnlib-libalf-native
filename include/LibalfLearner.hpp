@@ -44,7 +44,8 @@ public:
 	virtual QueryBatch *getQueries(void) = 0;
 	virtual void addCounterExample(Word &ce) = 0;
 	virtual bool addEncodedAnswer(Word &w, jint answer) = 0;
-	virtual jbyte *encodeConjecture(const libalf::conjecture &cj, size_t &size) const = 0;
+	virtual size_t computeConjectureSize(const libalf::conjecture &cj) const = 0;
+	virtual void encodeConjecture(jbyte *buf, size_t size, const libalf::conjecture &cj) const = 0;
 };
 
 
@@ -86,32 +87,47 @@ protected:
 template<class D>
 class LibalfFALearner : public TypedLibalfLearner<bool,D> {
 public:
-	jbyte *encodeConjecture(const libalf::conjecture &cj, size_t &size) const
+	size_t computeConjectureSize(const libalf::conjecture &cj) const
 	{
 		const libalf::finite_automaton &fa = dynamic_cast<const libalf::finite_automaton &>(cj);
-		return static_cast<const D *>(this)->encodeFAConjecture(fa, size);
+		return static_cast<const D *>(this)->computeFAConjectureSize(fa);
+	}
+
+	void encodeConjecture(jbyte *buf, size_t size, const libalf::conjecture &cj) const
+	{
+		const libalf::finite_automaton &fa = dynamic_cast<const libalf::finite_automaton &>(cj);
+		return static_cast<const D *>(this)->encodeFAConjecture(buf, size, fa);
 	}
 
 public:
 	bool decodeAnswer(jint encAnswer) const { return (encAnswer); }
-	// jbyte *encodeFAConjecture(const libalf::finite_automaton &fa, size_t &size) const;
+	// size_t computeFAConjectureSize(const libalf::finite_automaton &fa) const;
+	// void encodeFAConjecture(jbyte *buf, size_t len, const libalf::finite_automaton &fa) const;
 };
 
 template<class D>
 class LibalfDFALearner : public LibalfFALearner<D> {
 public:
-	jbyte *encodeFAConjecture(const libalf::finite_automaton &fa, size_t &size) const
+	size_t computeFAConjectureSize(const libalf::finite_automaton &fa) const
 	{
-		return SAF::encodeDFA(fa, size);
+		return SAF::computeDFASize(fa);
+	}
+	void encodeFAConjecture(jbyte *buf, size_t size, const libalf::finite_automaton &fa) const
+	{
+		return SAF::encodeDFA(buf, size, fa);
 	}
 };
 
 template<class D>
 class LibalfNFALearner : public LibalfFALearner<D> {
 public:
-	jbyte *encodeFAConjecture(const libalf::finite_automaton &fa, size_t &size) const
+	size_t computeFAConjectureSize(const libalf::finite_automaton &fa) const
 	{
-		return SAF::encodeNFA(fa, size);
+		return SAF::computeNFASize(fa);
+	}
+	void encodeFAConjecture(jbyte *buf, size_t size, const libalf::finite_automaton &fa) const
+	{
+		return SAF::encodeNFA(buf, size, fa);
 	}
 };
 

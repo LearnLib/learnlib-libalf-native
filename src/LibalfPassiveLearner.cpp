@@ -36,10 +36,10 @@ JNIEXPORT jboolean JNICALL Java_de_learnlib_libalf_LibalfPassiveLearner_addSampl
 {
 	LibalfLearner &learner = JNIUtil::extractRef<LibalfLearner>(env, ptr);
 
-	jint *samplesEnc = env->GetIntArrayElements(jSamplesEnc, NULL);
+	jint *samplesEnc = static_cast<jint *>(env->GetPrimitiveArrayCritical(jSamplesEnc, NULL));
 	jint *p = samplesEnc;
 
-	jint *outputsEnc = env->GetIntArrayElements(jOutputsEnc, NULL);
+	jint *outputsEnc = static_cast<jint *>(env->GetPrimitiveArrayCritical(jOutputsEnc, NULL));
 	jint *q = outputsEnc;
 
 	jboolean ok = JNI_TRUE;
@@ -56,8 +56,8 @@ JNIEXPORT jboolean JNICALL Java_de_learnlib_libalf_LibalfPassiveLearner_addSampl
 		}
 	}
 
-	env->ReleaseIntArrayElements(jOutputsEnc, outputsEnc, 0);
-	env->ReleaseIntArrayElements(jSamplesEnc, samplesEnc, 0);
+	env->ReleasePrimitiveArrayCritical(jOutputsEnc, outputsEnc, 0);
+	env->ReleasePrimitiveArrayCritical(jSamplesEnc, samplesEnc, 0);
 
 	return ok;
 }
